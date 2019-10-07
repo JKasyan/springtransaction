@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <bean id="libraryService" class="spring.transaction.service.LibraryService" >
+        <constructor-arg ref="bookDao" />
+        <constructor-arg ref="authorDao" />
+    </bean>
+
+    <tx:advice id="txAdvice" transaction-manager="chainTrManager">
+        <tx:attributes >
+            <tx:method name="get*" read-only="true" />
+            <tx:method name="*" propagation="REQUIRED" />
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config >
+        <aop:pointcut id="libraryServiceOperation" expression="execution(* spring.transaction.service.LibraryService.*(..))"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="libraryServiceOperation" />
+    </aop:config>
+
+   <bean id="mysqlDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://localhost:3306/schema1?characterEncoding=latin1"/>
+        <property name="username" value="root"/>
+        <property name="password" value="Jeka5301649"/>
+    </bean>
+
+    <bean id="pgDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="org.postgresql.Driver"/>
+        <property name="url" value="jdbc:postgresql://ec2-54-235-92-244.compute-1.amazonaws.com:5432/d1e92gidvq2rdf?ssl=true&amp;sslfactory=org.postgresql.ssl.NonValidatingFactory"/>
+        <property name="username" value="fymumoazswmgld"/>
+        <property name="password" value="c84d4d4d10eb3ee2fdcdbe2b785406a1b8e50dde3789836a69aa295386d63f5c"/>
+    </bean>
+
+    <bean id="bookDao" class="spring.transaction.dao.BookDao">
+        <constructor-arg ref="mysqlDataSource" />
+    </bean>
+
+    <bean id="authorDao" class="spring.transaction.dao.AuthorDao" >
+        <constructor-arg ref="pgDataSource" />
+    </bean>
+
+    <bean id="pgTxManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" >
+        <property name="dataSource" ref="pgDataSource"/>
+    </bean>
+
+    <bean id="mySqlTxManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" >
+        <property name="dataSource" ref="mysqlDataSource"/>
+    </bean>
+
+    <bean id="chainTrManager" class="org.springframework.data.transaction.ChainedTransactionManager">
+        <constructor-arg >
+            <list>
+                <ref bean="pgTxManager" />
+                <ref bean="mySqlTxManager" />
+            </list>
+        </constructor-arg>
+    </bean>
+
+</beans>

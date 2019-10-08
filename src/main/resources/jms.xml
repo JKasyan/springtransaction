@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="connectionFactory" class="org.springframework.amqp.rabbit.connection.CachingConnectionFactory" >
+        <constructor-arg ref="rabbitConnectionFactory" />
+    </bean>
+
+    <bean id="rabbitConnectionFactory" class="com.rabbitmq.client.ConnectionFactory" >
+        <property name="uri"
+                  value="amqp://reyjyype:iWR8wTKrx7smy5KjqLV9pWUWO7-NHRhh@spotted-monkey.rmq.cloudamqp.com/reyjyype" />
+    </bean>
+
+    <bean id="rabbitTemplate" class="org.springframework.amqp.rabbit.core.RabbitTemplate" >
+        <constructor-arg ref="connectionFactory" />
+        <property name="channelTransacted" value="true" />
+    </bean>
+
+    <bean id="rabbitTxManager" class="org.springframework.amqp.rabbit.transaction.RabbitTransactionManager">
+        <property name="connectionFactory" ref="connectionFactory" />
+    </bean>
+</beans>

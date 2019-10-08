@@ -11,7 +11,7 @@ public class Consumer {
 
     public static void main(String[] args) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setUri("");
+        factory.setUri("amqp://reyjyype:iWR8wTKrx7smy5KjqLV9pWUWO7-NHRhh@spotted-monkey.rmq.cloudamqp.com/reyjyype");
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 

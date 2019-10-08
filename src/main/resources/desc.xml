@@ -2,7 +2,6 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:aop="http://www.springframework.org/schema/aop"
-       xmlns:context="http://www.springframework.org/schema/context"
        xmlns:tx="http://www.springframework.org/schema/tx"
        xsi:schemaLocation="
         http://www.springframework.org/schema/beans
@@ -12,9 +11,12 @@
         http://www.springframework.org/schema/aop
         http://www.springframework.org/schema/aop/spring-aop.xsd">
 
+    <import resource="jms.xml" />
+
     <bean id="libraryService" class="spring.transaction.service.LibraryService" >
         <constructor-arg ref="bookDao" />
         <constructor-arg ref="authorDao" />
+        <property name="rabbitTemplate" ref="rabbitTemplate" />
     </bean>
 
     <tx:advice id="txAdvice" transaction-manager="chainTrManager">
@@ -31,9 +33,9 @@
 
    <bean id="mysqlDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
-        <property name="url" value="jdbc:mysql://localhost:3306/schema1?characterEncoding=latin1"/>
+        <property name="url" value="jdbc:mysql://localhost:3306/my_schema?characterEncoding=latin1"/>
         <property name="username" value="root"/>
-        <property name="password" value="Jeka5301649"/>
+        <property name="password" value="root"/>
     </bean>
 
     <bean id="pgDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
@@ -62,6 +64,7 @@
     <bean id="chainTrManager" class="org.springframework.data.transaction.ChainedTransactionManager">
         <constructor-arg >
             <list>
+                <ref bean="rabbitTxManager" />
                 <ref bean="pgTxManager" />
                 <ref bean="mySqlTxManager" />
             </list>
